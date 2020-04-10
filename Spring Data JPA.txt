@@ -1,0 +1,345 @@
+                                                         Spring DataJPA
+                                                         ==============
+(1)Itroduction
+==============
+->JPA or Java Persistence API is the Java specification for accessing, managing and persisting data between Java classes or 
+  objects and relational database.
+->Managing data between java classes or objects and the relational database is a very difficult task. 
+  The DAO layer usually contains a lot of boilerplate code that should be simplified in order to reduce the number of lines 
+  of code and make the code reusable.
+->Spring Data makes it possible by entirely remove the DAO implementations. 
+->In the Spring Data programming model with JPA, a DAO interface needs to extend the JPA specific Repository interface – 
+  i.e; JpaRepository. This will enable Spring Data to find this interface and automatically create an implementation for it.
+->By extending the interface we get the most relevant CRUD methods for standard data access available in a standard DAO.
+->Spring Data is not an implementation or product, it is just a specification. It contains set of interfaces which need to 
+  be implemented. It is a framework that provides an extra layer of abstraction on such interfaces. 
+->The repository layer will contain three layers as mentioned below.
+
+(2)Repository hierarchy looks as follows
+========================================
+(I) Repository<T,ID > --> (I) CrudRepository<T,ID> --> (I) PagingAndSortingRepository<T,ID>  --> (I) JpaRepository<T,ID>
+
+->Repository<T,ID > is a marker interface.And CrudRepository<T,ID> interface provide some pre-defined curd operation methods,
+  no need to implement that methods just only use that methods.And PagingAndSortingRepository<T,ID> interface provide some 
+  pre-defined methods like pagination,sorting etc.And JpaRepository<T,ID> interface access all those methods along with some
+  extra pre-defined methods.So JpaRepository<T,ID> can access all those pre-defined methods.
+  
+(3)Spring Data Repositories
+===========================
+(i)Repository<T, ID extends Serializable>
+=========================================
+->This interface is a marker interface.
+->It captures the type of the managed entity and the type of the entity’s id.
+->It helps the Spring container to discover the “concrete” repository interfaces when classpath is scanned.
+
+(ii)CrudRepository<T, ID extends Serializable>
+==============================================
+->It provides CRUD operations for the managed entity.
+->All Superinterfaces: Repository<T,ID>
+
+Method Details:
+---------------
+(1)save
+-------
+   <S extends T> S save(S entity)
+   ->Saves a given entity. Use the returned instance for further operations as the save operation might have changed the 
+     entity instance completely.
+   Parameters: entity - must not be null.
+   Returns: the saved entity; will never be null.
+   Throws: IllegalArgumentException - in case the given entity is null.
+
+(2)saveAll
+----------
+   <S extends T> Iterable<S> saveAll(Iterable<S> entities)
+   ->Saves all given entities.
+   Parameters: entities - must not be null nor must it contain null.
+   Returns: the saved entities; will never be null. The returned Iterable will have the same size as the Iterable passed as 
+            an argument.
+   Throws: IllegalArgumentException - in case the given entities or one of its entities is null.
+
+(3)findAll
+----------
+   Iterable<T> findAll()
+   ->Returns all instances of the type.
+   Returns: all entities
+
+(4)findById
+-----------
+   Optional<T> findById(ID id)
+   ->Retrieves an entity by its id.
+   Parameters: id - must not be null.
+   Returns: the entity with the given id or Optional#empty() if none found.
+   Throws: IllegalArgumentException - if id is null.
+
+(5)findAllById
+--------------
+   Iterable<T> findAllById(Iterable<ID> ids)
+   ->Returns all instances of the type T with the given IDs.
+   ->If some or all ids are not found, no entities are returned for these IDs.
+   ->Note that the order of elements in the result is not guaranteed.
+   Parameters: ids - must not be null nor contain any null values.
+   Returns: guaranteed to be not null. The size can be equal or less than the number of given ids.
+   Throws: IllegalArgumentException - in case the given ids or one of its items is null.
+
+(6)existsById
+-------------
+   boolean existsById(ID id)
+   ->Returns whether an entity with the given id exists.
+   Parameters: id - must not be null.
+   Returns: true if an entity with the given id exists, false otherwise.
+   Throws: IllegalArgumentException - if id is null.
+
+(7)count
+--------
+   long count()
+   ->Returns the number of entities available.
+   Returns: the number of entities.
+
+(8)delete
+---------
+  void delete(T entity)
+  ->Deletes a given entity.
+  Parameters: entity - must not be null.
+  Throws: IllegalArgumentException - in case the given entity is null.
+
+(9)deleteById
+-------------
+  void deleteById(ID id)
+  ->Deletes the entity with the given id.
+  Parameters: id - must not be null.
+  Throws: IllegalArgumentException - in case the given id is null
+
+(10)deleteAll
+------------
+  void deleteAll(Iterable<? extends T> entities)
+  ->Deletes the given entities.
+  Parameters: entities - must not be null. Must not contain null elements.
+  Throws: IllegalArgumentException - in case the given entities or one of its entities is null.
+
+(11)deleteAll
+-------------
+   void deleteAll()
+   ->Deletes all entities managed by the repository.
+
+
+(iii)PagingAndSortingRepository<T, ID extends Serializable>
+===========================================================
+->This interface declares the methods that are used to sort and paginate entities that are retrieved from the database.
+->All Superinterfaces: CrudRepository<T,ID>, Repository<T,ID>
+
+Method Details:
+---------------
+->Methods inherited from interface org.springframework.data.repository.CrudRepository -->count, delete, deleteAll, deleteAll,
+                                                        deleteById, existsById, findAll, findAllById, findById, save, saveAll
+(1)findAll
+----------
+   Iterable<T> findAll(Sort sort)
+   ->Returns all entities sorted by the given options.
+   Parameters: sort -
+   Returns:all entities sorted by the given options
+
+(2)findAll
+----------
+   Page<T> findAll(Pageable pageable)
+   ->Returns a Page of entities meeting the paging restriction provided in the Pageable object.
+   Parameters: pageable --->which is the key to implementing Pagination.When using Pageable, we create a Pageable object with
+                            certain properties and we've to specify at least: Page size,Current page number,Sorting.
+   Returns: A page of entities.
+ 
+Ex:
+->So, let's assume that we want to show the first page of a result set sorted by lastName, ascending, having no more than 
+  five records each. This is how we can achieve this using a PageRequest and a Sort definition:
+
+     Sort sort = new Sort(new Sort.Order(Direction.ASC, "lastName"));
+     Pageable pageable = new PageRequest(0, 5, sort);
+
+(iv)JpaRepository<T, ID extends Serializable>
+---------------------------------------------
+->This interface is a JPA specific repository interface that combines the methods declared by the common repository 
+  interfaces behind a single interface.
+->All Superinterfaces: PagingAndSortingRepository<T,ID>, CrudRepository<T,ID>, Repository<T,ID>
+
+Method Details:
+--------------
+->Methods inherited from interface org.springframework.data.repository.PagingAndSortingRepository -->findAll
+->Methods inherited from interface org.springframework.data.repository.CrudRepository -->count, delete, deleteAll, deleteAll,
+                                                                                      deleteById, existsById, findById, save
+->Methods inherited from interface org.springframework.data.repository.query.QueryByExampleExecutor -->count, exists, 
+                                                                                                       findAll, findOne 
+(1)saveAndFlush
+---------------
+  <S extends T> S saveAndFlush(S entity)
+  ->Saves an entity and flushes changes instantly.
+  Parameters: entity -
+  Returns: the saved entity   
+
+(2)flush
+--------
+  void flush()
+  ->Flushes all pending changes to the database.
+
+(3)deleteInBatch
+----------------
+  void deleteInBatch(Iterable<T> entities)
+  ->Deletes the given entities in a batch which means it will create a single Query. Assume that we will clear the 
+    EntityManager after the call.
+  Parameters: entities -
+
+(4)deleteAllInBatch
+-------------------
+  void deleteAllInBatch()
+  ->Deletes all entities in a batch call.
+
+(5)getOne
+---------
+  T getOne(ID id)
+  ->Returns a reference to the entity with the given identifier.This method will throw EntityNotFoundException at the time 
+  of actual access if the requested entity does not exist in the database.
+  Parameters: id - must not be null.
+  Returns: a reference to the entity with the given identifier.
+
+Note: Difference between getOne and findById in Spring Data JPA?
+->Both findById() and getOne() methods are used to retrieve an object from underlying datastore. But the underlying 
+  mechanism for retrieving records is different for both these methods.
+  -getOne() method-->getOne() returns a reference to the entity with the given identifier. getOne internally invokes 
+  EntityManager.getReference() method. As per docs, this method will always return a proxy without hitting the database 
+  (lazily fetched). This method will throw EntityNotFoundException at the time of actual access if the requested entity 
+  does not exist in the database.
+  -findById() method-->This method will actually hit the database and return the real object mapping to a row in the 
+  database. It is EAGER loaded operation that returns null if no record exists in database.
+
+(4)Different Ways Of Making Custom Access Method and Queries
+============================================================
+->By implementing one of the Repository interfaces, the DAO will already have some basic CRUD methods (and queries)
+  defined and implemented.
+
+->To define custom access methods, Spring JPA supports quite a few options:
+i)Simply define a new method in the interface.
+ii)Provide the actual JPA query by using the @Query annotation on the top of the method.
+iii)use the more advanced Specification and Querydsl support in Spring Data.
+iv)Define custom queries via JPA Named Queries
+
+->The Specifications and Querydsl support – is similar to JPA Criteria but using a more flexible and convenient API. 
+  This makes the whole operation much more readable and reusable. 
+  The advantages of this API will become more pronounced when dealing with a large number of fixed queries
+
+(5)Spring Data Custom Query
+===========================
+->Two important ways making custom Query.
+ 
+(i)Automatic Custom Queries
+---------------------------
+->When Spring Data creates a new Repository implementation, it analyses all the methods defined by the interfaces and tries 
+  to automatically generate queries from the method names.
+->The mechanism of this approach first removes common prefixes from the method name and parses the constraints of the query 
+  from the rest of the method name. In order to use this approach, we have to make sure the method names of your repository 
+  interface are created by combining the property names of an entity object and the supported keywords.
+->The advantage of using this approach is that it makes it very easy to implement. But the limitation is if the query 
+  contains more than one parameter than the method name will be not readable. Also the keywords that are not supported by 
+  JPA like "lower" will not be useful with this approach.
+
+Ex:
+->We’ll define the findByName method in the DAO interface; this will automatically generate the correct query:
+
+public interface EmpDAO extends JpaRepository<Employee, Long> {
+     Employee findByName(String name); --->Here "Name" and "name" should be match And name must be a property of model class.
+     List<Employee> findByLastName(String lastName); --->"LastName" and "lastName" must match.
+}
+->the query will be automatically created using JPA query builder.
+
+(ii)Manual Custom Queries
+-------------------------
+->Manual Custom queries are also known as queries creation using @Query tag. The @Query annotation will be used to create 
+  queries using the JPA query language and for binding these queries directly to the methods of your repository interface. 
+  When the query method is called, Spring Data JPA will execute the query specified by the @Query annotation.
+->The advantage of this approach is you can use JPA query language for the creation of a query. Also, the query stays in 
+  repository layer. Limitation of this approach is @Query can be only used when JPA query language is supported.
+->Using named parameters is good.
+
+Ex:
+@Query("SELECT e FROM Employee e WHERE LOWER(e.name) = LOWER(:name)")
+Foo retrieveByName(@Param("name") String name);
+
+(6)Spring Data JPA Exception Translation
+========================================
+->The point to consider is because the default Spring ORM templates are not used with Spring JPA, are we losing exception 
+  translation by using Spring Data JPA?Are we not going to get our JPA exceptions translated to Spring’s DataAccessException 
+  hierarchy?
+
+->The answer is No. Exception translation is still enabled by the use of the annotation@Repository on the DAO. 
+  The annotation enables a Spring bean postprocessor to advice all @Repository beans with all the,
+  PersistenceExceptionTranslator instances found in the Container and provides exception translation just as before.
+
+(7)Using Transactions in Spring Data JPA
+========================================
+->The class SimpleJpaRepository itself is annotated with @Transactional(readOnly = true), that means by default all method 
+  will run within read only transactions. The write operations override that behavior with a plain @Transaction annotation,
+  which means all those methods will run within write transactions and with other default settings.
+
+@Repository
+@Transactional(readOnly = true)
+public class SimpleJpaRepository implements JpaRepository<T, ID>,{
+
+         @Transactional
+         public void deleteById(ID id) {....}
+         @Transactional
+         public void deleteAll(Iterable<? extends T> entities) {...}
+         @Transactional
+         public void deleteInBatch(Iterable<T> entities) {...}
+         @Transactional
+         public void deleteAll() {...}
+         @Transactional
+         public void deleteAllInBatch() {...}
+
+(8)Spring DataJPA Configuration
+===============================
+->To activate the Spring JPA repository support we can use the @EnableJpaRepositories annotation and specify the package 
+  that contains the DAO interfaces:
+
+    @EnableJpaRepositories(basePackages = "com.baeldung.jpa.dao")
+    public class PersistenceConfig { ... }
+
+->We can do the same with an XML configuration:
+<jpa:repositories base-package="org.rest.dao.spring" />
+
+(9)The Maven Dependency Of Spring DataJPA
+=========================================
+->In addition to the Maven configuration the spring-data-jpa dependency is added:
+
+<dependency>
+   <groupId>org.springframework.data</groupId>
+   <artifactId>spring-data-jpa</artifactId>
+   <version>2.1.6.RELEASE</version>
+</dependency>
+
+(10)Using Spring DataJPA in Spring Boot
+=======================================
+->We can also use the Spring Boot Starter Data JPA dependency that will automatically configure the DataSource for us.
+->We also need to make sure that the database we want to use is present in the classpath. In our example,
+  we’ve added the ojdbc6
+
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-data-jpa</artifactId>
+   <version>2.1.3.RELEASE</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.jslsolucoes/ojdbc6 -->
+<dependency>
+   <groupId>com.jslsolucoes</groupId>
+   <artifactId>ojdbc6</artifactId>
+   <version>11.2.0.1.0</version>
+</dependency>
+
+The application.properties Of Spring Boot Application file looks as follows:
+----------------------------------------------------------------------------
+#Database Configuration
+spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
+spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
+spring.datasource.data-username=scott
+spring.datasource.data-password=tiger
+ 
+#Hibernate Configuration
+spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.generate-ddl=true
+spring.jpa.show-sql=true
